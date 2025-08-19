@@ -1,0 +1,1310 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Corglass</title>
+    <style>
+        :root {
+            /* Light Mode Colors */
+            --bg-color: #f4f6f9;
+            --card-bg-color: #ffffff;
+            --text-color: #2c3e50;
+            --text-light-color: #8894a1;
+            --border-color: #e9ecef;
+            --shadow-color: rgba(99, 110, 114, 0.1);
+            --row-bg-color: #fcfcfc;
+            --weather-bg-day: linear-gradient(135deg, #81d4fa, #5abde8);
+            --weather-text-day: #ffffff;
+            --weather-bg-night: linear-gradient(135deg, #2c3e50, #4a6a8a);
+            --weather-text-night: #e1e3e6;
+            --section-bg-odd: #f8f9fa;
+            --section-bg-even: #ffffff;
+
+
+            /* Shared Colors */
+            --pv-color: #f5b942;
+            --grid-color: #5abde8;
+            --battery-color: #82d770;
+            --load-color: #ff8c6c;
+            --hub-color: #f7a85c;
+            --error-color: #e74c3c;
+            --connection-status-color: #c770d9;
+            --ev-color: #5c8af7;
+            --eddi-color: #f78c5c;
+         }
+
+        body.dark {
+            /* Dark Mode Colors */
+            --bg-color: #1a1d21;
+            --card-bg-color: #252a30;
+            --text-color: #e1e3e6;
+            --text-light-color: #98a1ab;
+            --border-color: #373e47;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --row-bg-color: #2c3238;
+            --weather-bg-day: linear-gradient(135deg, #5abde8, #3e8cb0);
+            --weather-bg-night: linear-gradient(135deg, #1f2937, #374151);
+            --section-bg-odd: #2c3238;
+            --section-bg-even: #252a30;
+         }
+
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+       
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            transition: background-color 0.3s ease;
+         }
+       
+        .dashboard-card {
+            background-color: var(--card-bg-color);
+            border-radius: 20px;
+            box-shadow: 0 8px 30px var(--shadow-color);
+            padding: 0;
+            width: 100%;
+            max-width: 450px;
+            box-sizing: border-box;
+            position: relative;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+         }
+       
+        #apiError {
+            display: none;
+            background-color: var(--error-color);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin: 15px 25px 0;
+            text-align: center;
+            font-size: 0.9em;
+            font-weight: 500;
+         }
+
+        #header-section {
+            padding: 15px 25px;
+            background: var(--weather-bg-day);
+            color: var(--weather-text-day);
+            transition: background 0.5s ease;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+         }
+        #header-section.night {
+            background: var(--weather-bg-night);
+            color: var(--weather-text-night);
+         }
+
+        .header-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+         }
+
+        #weatherWidget {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+         }
+        #weatherIcon {
+            width: 48px;
+            height: 48px;
+            flex-shrink: 0;
+         }
+        #weatherIcon svg {
+            width: 100%;
+            height: 100%;
+            stroke: currentColor;
+         }
+       
+        .weather-details {
+            font-size: 0.8em;
+            line-height: 1.5;
+         }
+        #weatherTemp {
+            font-size: 1.4em;
+            font-weight: 600;
+         }
+        #weatherLocation {
+            font-weight: 500;
+            opacity: 0.9;
+         }
+        .weather-extra {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            opacity: 0.9;
+            font-size: 0.9em;
+         }
+        .weather-extra-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+         }
+        .weather-extra-item svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2.5;
+         }
+
+        .top-right-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: right;
+         }
+
+        .data-timestamp {
+            font-size: 0.75em;
+            color: currentColor;
+            opacity: 0.9;
+         }
+
+        #themeToggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: currentColor;
+            opacity: 0.9;
+         }
+        #themeToggle:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            opacity: 1;
+         }
+        #themeToggle svg {
+            width: 18px;
+            height: 18px;
+         }
+        .moon-icon { display: none; }
+        body.dark .sun-icon { display: none; }
+        body.dark .moon-icon { display: block; }
+       
+        .card-title {
+            text-align: center;
+            font-size: 1.4em;
+            font-weight: 600;
+            margin: 0;
+            color: currentColor;
+         }
+
+        .main-content {
+            padding: 25px;
+         }
+       
+        #power-flow-container { width: 100%; aspect-ratio: 400 / 450; margin-bottom: 20px; }
+       
+        .summary-title {
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--text-light-color);
+            margin: 25px 0 15px 0;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+         }
+       
+        .energy-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 10px; margin-bottom: 25px; }
+        .system-status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px 10px; }
+        .summary-item { text-align: center; }
+        .summary-item .label { font-size: 0.9em; color: var(--text-light-color); margin-bottom: 5px; }
+        .summary-item .value { font-size: 1.1em; font-weight: 600; }
+        .summary-item .unit { font-size: 0.9em; margin-left: 3px; }
+       
+        .footer-status {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            margin-top: 25px;
+            font-size: 0.85em;
+            color: var(--text-light-color);
+            position: relative;
+         }
+       
+        .footer-status p { margin: 5px 0; }
+        .footer-status p > span {
+            font-weight: 600;
+            color: var(--text-color);
+            white-space: pre-wrap;
+            word-break: break-word;
+         }
+       
+        .footer-status .error-message { color: var(--error-color); font-weight: 600; }
+       
+        #connectionStatus {
+            position: absolute; bottom: 0; right: 0; font-size: 0.8em;
+            font-style: italic; color: var(--connection-status-color);
+         }
+       
+        #powerFlowSvg .node-text-label { font-size: 11px; fill: var(--text-light-color); }
+        #powerFlowSvg .node-text-kw { font-size: 13px; font-weight: 600; fill: var(--text-color); }
+        #powerFlowSvg .node-text-kwh { font-size: 10px; fill: var(--text-light-color); }
+        #powerFlowSvg .node-text-soc { font-size: 14px; font-weight: 600; fill: var(--text-color); }
+        #powerFlowSvg .total-gen-label { font-size: 10px; fill: var(--text-light-color); }
+        #powerFlowSvg .total-gen-value { font-size: 12px; font-weight: 600; fill: var(--text-color); }
+        #powerFlowSvg .flow-line { stroke: var(--border-color); stroke-width: 2.5px; transition: stroke 0.4s ease; }
+        #powerFlowSvg .flow-blip { transition: fill 0.4s ease; visibility: hidden; }
+        #powerFlowSvg .power-ring-bg { fill: none; stroke: var(--border-color); stroke-width: 4; }
+        #powerFlowSvg .power-ring-fg { fill: none; stroke-width: 4; stroke-linecap: round; transition: stroke-dasharray 0.5s ease-out; }
+       
+        .data-toggle-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+         }
+
+        .data-toggle-btn {
+            position: relative;
+            padding: 10px;
+            font-size: 0.9em;
+            font-weight: 600;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--card-bg-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+         }
+
+        .data-toggle-btn:hover {
+            background-color: var(--row-bg-color);
+            border-color: var(--pv-color);
+         }
+
+        .data-toggle-btn.active {
+            background-color: var(--pv-color);
+            color: white;
+            border-color: var(--pv-color);
+         }
+       
+        .update-status {
+            position: absolute;
+            top: 4px;
+            right: 6px;
+            font-size: 0.6em;
+            font-style: italic;
+            color: var(--connection-status-color);
+         }
+       
+        .data-toggle-btn.active .update-status {
+            color: rgba(255,255,255,0.8);
+         }
+
+        .data-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s ease-in-out;
+            margin-top: 0;
+         }
+
+        .data-container.visible {
+            max-height: 300vh; /* Increased max-height for potentially long data lists */
+            margin-top: 20px;
+         }
+
+        .data-section-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 25px 0 10px 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--pv-color);
+         }
+
+        .data-sub-section-title {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: var(--text-light-color);
+            margin: 20px 0 8px 0;
+            padding-left: 8px;
+            border-left: 3px solid var(--grid-color);
+         }
+
+        .data-table-single {
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 8px;
+         }
+
+        .data-container > div:nth-of-type(odd) .data-table-single {
+            background-color: var(--section-bg-odd);
+         }
+        .data-container > div:nth-of-type(even) .data-table-single {
+             background-color: var(--section-bg-even);
+         }
+
+        .data-table {
+            display: grid;
+            grid-template-columns: minmax(120px, 2fr) 1fr 1fr;
+            gap: 8px 12px;
+            font-size: 0.85em;
+         }
+
+        .data-table-single .data-table-grid {
+            display: grid;
+            grid-template-columns: minmax(120px, 2fr) 2fr;
+            gap: 8px 12px;
+         }
+
+        .data-header {
+            font-weight: 600;
+            color: var(--text-light-color);
+            padding-bottom: 5px;
+         }
+       
+        .data-label, .data-value {
+            padding: 8px 5px;
+            background-color: transparent;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+         }
+
+        .data-table-single .data-label, .data-table-single .data-value {
+            border-bottom: 1px solid var(--border-color);
+         }
+        .data-table-single .data-table-grid > div:last-child,
+        .data-table-single .data-table-grid > div:nth-last-child(2) {
+             border-bottom: none;
+         }
+
+        .data-label {
+            font-weight: 500;
+            color: var(--text-color);
+            word-break: break-word;
+         }
+
+        .data-value {
+            font-family: 'Fira Code', monospace;
+            justify-content: flex-end;
+         }
+       
+        .version-footer { text-align: center; font-size: 0.7em; color: var(--text-light-color); margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-card">
+        <div id="header-section">
+            <div class="header-top-row">
+                <div id="weatherWidget">
+                    <div id="weatherIcon"></div>
+                    <div class="weather-details">
+                        <div id="weatherTemp">--°/--°</div>
+                        <div id="weatherLocation">--</div>
+                        <div class="weather-extra">
+                            <div class="weather-extra-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2L12 5"></path><path d="M12 19L12 22"></path><path d="M5 12L2 12"></path><path d="M22 12L19 12"></path><path d="M19 5L19 5"></path><path d="M5 19L5 19"></path><path d="M19 19L19 19"></path><path d="M5 5L5 5"></path><circle cx="12" cy="12" r="4"></circle></svg>
+                                <span id="weatherSunrise">--:--</span>
+                            </div>
+                            <div class="weather-extra-item">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 4h4v4"></path><path d="M16 20h4v-4"></path><path d="M8 20H4v-4"></path><path d="M8 4H4v4"></path><path d="M12 4V2"></path><path d="M12 22V20"></path><path d="M20 12h2"></path><path d="M2 12h2"></path><path d="M18.364 5.636l1.414-1.414"></path><path d="M4.222 19.778l1.414-1.414"></path><path d="M18.364 18.364l1.414 1.414"></path><path d="M4.222 4.222l1.414 1.414"></path></svg>
+                                <span id="weatherHumidity">--%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="top-right-controls">
+                    <div id="dataTimestamp" class="data-timestamp"></div>
+                    <button id="themeToggle" title="Toggle Theme">
+                        <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <h2 class="card-title">Corglass</h2>
+        </div>
+
+        <div class="main-content">
+            <div id="apiError"></div>
+            <div id="power-flow-container"><svg id="powerFlowSvg"></svg></div>
+           
+            <h3 class="summary-title">Today's Energy Summary</h3>
+            <div class="energy-summary-grid">
+                <div class="summary-item"> <div class="label">Generated</div> <div class="value"><span id="sum-gen">--</span><span class="unit">kWh</span></div> </div>
+                <div class="summary-item"> <div class="label">Consumed</div> <div class="value"><span id="sum-cons">--</span><span class="unit">kWh</span></div> </div>
+                <div class="summary-item"> <div class="label">From Grid</div> <div class="value"><span id="sum-imp">--</span><span class="unit">kWh</span></div> </div>
+                <div class="summary-item"> <div class="label">To Grid</div> <div class="value"><span id="sum-exp">--</span><span class="unit">kWh</span></div> </div>
+                <div class="summary-item"> <div class="label">Charged</div> <div class="value"><span id="sum-chg">--</span><span class="unit">kWh</span></div> </div>
+                <div class="summary-item"> <div class="label">Discharged</div> <div class="value"><span id="sum-dis">--</span><span class="unit">kWh</span></div> </div>
+            </div>
+           
+            <h3 class="summary-title">Solis System Status</h3>
+            <div class="system-status-grid">
+                <div class="summary-item"> <div class="label">Battery SOC</div> <div class="value"><span id="stat-soc">--</span><span class="unit">%</span></div> </div>
+                <div class="summary-item"> <div class="label">Battery Capacity</div> <div class="value"><span id="stat-cap">--</span><span class="unit">kWh</span></div> </div>
+            </div>
+           
+            <div class="footer-status">
+                <p>Connection Status: <span id="systemStatus">--</span></p>
+                <p>Last Update: <span id="lastUpdateTime">--</span></p>
+                <div id="connectionStatus">Idle</div>
+            </div>
+           
+            <div class="data-toggle-grid">
+                <button class="data-toggle-btn" data-target="solisDataContainer">Solis <span id="solisStatus" class="update-status"></span></button>
+                <button class="data-toggle-btn" data-target="hypontechDataContainer">Hypontech <span id="hypontechStatus" class="update-status"></span></button>
+                <button class="data-toggle-btn" data-target="eddiDataContainer">Eddi <span id="eddiStatus" class="update-status"></span></button>
+                <button class="data-toggle-btn" data-target="zappiDataContainer">Zappi <span id="zappiStatus" class="update-status"></span></button>
+            </div>
+            <div id="solisDataContainer" class="data-container"></div>
+            <div id="hypontechDataContainer" class="data-container"></div>
+            <div id="eddiDataContainer" class="data-container"></div>
+            <div id="zappiDataContainer" class="data-container"></div>
+           
+            <div class="version-footer" id="version-footer">Dashboard v3.0</div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const UIElements = {};
+    document.querySelectorAll('[id]').forEach(el => UIElements[el.id] = el);
+
+    // --- Configuration for Solis Data Display ---
+    const G = {
+        'Live System Status': [
+            { l: 'Solar Generation', k: 'power', u: 'powerStr' },
+            { l: 'Home Consumption', k: 'familyLoadPower', u: 'familyLoadPowerStr' },
+            { l: 'Battery Power', k: 'batteryPower', u: 'batteryPowerStr' },
+            { l: 'Grid Power', k: 'psum', u: 'psumStr', f: v => (v * -1).toFixed(3) },
+            { l: 'Battery SOC', k: 'batteryPercent', un: '%' },
+        ],
+        'Solar Generation Totals': [
+            { l: 'Today', k: 'dayEnergy', u: 'dayEnergyStr' },
+            { l: 'Month', k: 'monthEnergy', u: 'monthEnergyStr' },
+            { l: 'Year', k: 'yearEnergy', u: 'yearEnergyStr' },
+            { l: 'Lifetime', k: 'allEnergy', u: 'allEnergyStr' },
+        ],
+        'Battery Energy Totals': [
+            { l: 'Charged Today', k: 'batteryChargeEnergy', u: 'batteryChargeEnergyStr' },
+            { l: 'Discharged Today', k: 'batteryDischargeEnergy', u: 'batteryDischargeEnergyStr' },
+            { l: 'Charged Total', k: 'batteryChargeTotalEnergy', u: 'batteryChargeTotalEnergyStr' },
+            { l: 'Discharged Total', k: 'batteryDischargeTotalEnergy', u: 'batteryDischargeTotalEnergyStr' },
+        ],
+        'Grid Energy Totals': [
+            { l: 'Imported Today', k: 'gridPurchasedDayEnergy', u: 'gridPurchasedDayEnergyStr' },
+            { l: 'Exported Today', k: 'gridSellDayEnergy', u: 'gridSellDayEnergyStr' },
+            { l: 'Imported Total', k: 'gridPurchasedTotalEnergy', u: 'gridPurchasedTotalEnergyStr' },
+            { l: 'Exported Total', k: 'gridSellTotalEnergy', u: 'gridSellTotalEnergyStr' },
+        ],
+        'Financial & Environmental': [
+            { l: 'Income Today', k: 'dayInCome', u: 'dayInComeUnit' },
+            { l: 'Income Month', k: 'monthInCome', u: 'monthInComeUnit' },
+            { l: 'Income Year', k: 'yearInCome', u: 'yearInComeUnit' },
+            { l: 'Income Total', k: 'allInCome', u: 'allInComeUnit' },
+            { l: 'CO₂ Reduction', k: 'powerStationAvoidedCo2', u: 'powerStationAvoidedCo2Unit' },
+            { l: 'Coal Saved', k: 'powerStationAvoidedTce', u: 'powerStationAvoidedTceUnit' },
+            { l: 'Trees Planted', k: 'powerStationNumTree' },
+        ],
+        'Site & System Details': [
+            { l: 'Location', k: 'cityStr', f: (v, d) => `${v}, ${d.countryStr}` },
+            { l: 'Weather', k: 'condTxtD', f: (v, d) => `${v||'N/A'}, ${d.tmpMin||'--'}-${d.tmpMax||'--'}${d.tmpUnit||''}` },
+            { l: 'Sunrise/Sunset', k: 'sr', f: (v, d) => `${v||'--:--'}/${d.ss||'--:--'}` },
+            { l: 'Capacity', k: 'capacity', u: 'capacityStr' },
+            { l: 'S/N', k: 'sno' },
+        ]
+    };
+    const ALWAYS_SHOW = new Set(['power', 'familyLoadPower', 'batteryPower', 'psum', 'dayEnergy', 'monthEnergy', 'yearEnergy', 'allEnergy', 'batteryChargeEnergy', 'batteryDischargeEnergy', 'batteryChargeTotalEnergy', 'batteryDischargeTotalEnergy', 'gridPurchasedDayEnergy', 'gridSellDayEnergy', 'gridPurchasedTotalEnergy', 'gridSellTotalEnergy']);
+    // --- End Solis Config ---
+
+
+    // --- Theme Management ---
+    const themeToggle = document.getElementById('themeToggle');
+    const body = document.body;
+
+    const applyTheme = (theme) => {
+        body.classList.toggle('dark', theme === 'dark');
+     };
+
+    themeToggle.addEventListener('click', () => {
+        const newTheme = body.classList.contains('dark') ? 'light' : 'dark';
+        localStorage.setItem('theme', newTheme);
+        applyTheme(newTheme);
+     });
+
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+   
+    applyTheme(savedTheme || (prefersDark ? 'dark' : 'light'));
+    // --- End Theme Management ---
+
+
+    const SOLIS_API_URL = 'https://solistest.mcnamee-conor.workers.dev/';
+    const HYPONTECH_API_URL = 'https://hypontech.mcnamee-conor.workers.dev/?json=true';
+    const MYENERGI_API_URL = 'https://myenergi.mcnamee-conor.workers.dev/';
+   
+    const svgConfig = {
+        nodes: {
+            solis_pv: { x: 50, y: 125, label: 'Solis PV', color: 'var(--pv-color)' },
+            hypontech_pv: { x: 50, y: 250, label: 'Hypontech PV', color: 'var(--pv-color)' },
+            grid: { x: 200, y: 50, label: 'Grid', color: 'var(--grid-color)' },
+            battery: { x: 350, y: 175, label: 'Battery', color: 'var(--battery-color)' },
+            house: { x: 200, y: 300, label: 'House', color: 'var(--load-color)' },
+            hub: { x: 200, y: 175, label: 'Hub', color: 'var(--hub-color)' },
+            ev_charger: { x: 350, y: 300, label: 'EV Charger', color: 'var(--ev-color)' },
+            eddi: { x: 200, y: 400, label: 'Eddi', color: 'var(--eddi-color)'}
+         },
+        flows: {}
+     };
+
+    function initPowerFlowSVG() {
+        const svg = UIElements.powerFlowSvg;
+        svg.setAttribute('viewBox', '0 0 400 450');
+        svg.innerHTML = '';
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+       
+        Object.values(svgConfig.nodes).forEach(node => {
+            const marker = document.createElementNS('http://www.w3.org/2000/svg', 'marker');
+            marker.id = `arrowhead-${node.label.replace(/\s+/g, '_')}`;
+            marker.setAttribute('viewBox', '0 0 10 10');
+            marker.setAttribute('refX', '9');
+            marker.setAttribute('refY', '5');
+            marker.setAttribute('markerWidth', '5');
+            marker.setAttribute('markerHeight', '5');
+            marker.setAttribute('orient', 'auto-start-reverse');
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', 'M 0 0 L 10 5 L 0 10 z');
+            path.setAttribute('fill', node.color);
+            marker.appendChild(path);
+            defs.appendChild(marker);
+         });
+        svg.appendChild(defs);
+
+        const createFlow = (from, to) => {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            const fromNode = svgConfig.nodes[from];
+            const toNode = svgConfig.nodes[to];
+            line.id = `line-${from}-${to}`;
+            line.setAttribute('x1', fromNode.x);
+            line.setAttribute('y1', fromNode.y);
+            line.setAttribute('x2', toNode.x);
+            line.setAttribute('y2', toNode.y);
+            line.classList.add('flow-line');
+            svg.appendChild(line);
+            const blips = Array.from({ length: 5 }, (_, i) => {
+                const blip = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                blip.id = `blip-${from}-${to}-${i}`;
+                blip.setAttribute('r', '3');
+                blip.classList.add('flow-blip');
+                svg.appendChild(blip);
+                return blip;
+             });
+            svgConfig.flows[`${from}-${to}`] = { line, blips };
+         };
+       
+        createFlow('solis_pv', 'hub');
+        createFlow('hypontech_pv', 'hub');
+        createFlow('grid', 'hub');
+        createFlow('battery', 'hub');
+        createFlow('hub', 'house');
+        createFlow('hub', 'ev_charger');
+        createFlow('house', 'eddi');
+       
+        Object.entries(svgConfig.nodes).forEach(([key, { x, y, label, color }]) => {
+            const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+           
+            const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            circle.setAttribute('cx', x); circle.setAttribute('cy', y); circle.setAttribute('r', key === 'hub' ? 25 : 40);
+            circle.setAttribute('fill', 'var(--card-bg-color)');
+            circle.setAttribute('stroke', color); circle.setAttribute('stroke-width', '3');
+            group.appendChild(circle);
+
+            if (key === 'solis_pv' || key === 'hypontech_pv') {
+                const radius = 40;
+                const ringBg = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                ringBg.setAttribute('cx', x);
+                ringBg.setAttribute('cy', y);
+                ringBg.setAttribute('r', radius + 4);
+                ringBg.classList.add('power-ring-bg');
+                group.appendChild(ringBg);
+
+                const ringFg = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                ringFg.id = `power-ring-${key}`;
+                ringFg.setAttribute('stroke', color);
+                ringFg.classList.add('power-ring-fg');
+                group.appendChild(ringFg);
+             }
+
+
+            if (key === 'ev_charger') {
+                const carIcon = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                carIcon.setAttribute('d', 'M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h12v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z');
+                carIcon.setAttribute('fill', 'var(--text-color)');
+                carIcon.setAttribute('transform', `translate(${x-12}, ${y-32})`);
+                group.appendChild(carIcon);
+             }
+
+            if (key === 'eddi') {
+                const eddiIcon = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                eddiIcon.setAttribute('d', 'M12 2.69l5.66 5.66a8 8 0 1 1-11.32 0L12 2.69zM12 17.5V12h-1a1 1 0 1 1 0-2h1V7.5a1 1 0 1 1 2 0V10h1a1 1 0 1 1 0 2h-1v5.5a1 1 0 1 1-2 0z');
+                eddiIcon.setAttribute('fill', 'var(--text-color)');
+                eddiIcon.setAttribute('transform', `translate(${x-12}, ${y-32}) scale(1.2)`);
+                group.appendChild(eddiIcon);
+             }
+
+            const textLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textLabel.id = `text-label-${key}`;
+            textLabel.setAttribute('x', x);
+            textLabel.setAttribute('y', y);
+            textLabel.setAttribute('text-anchor', 'middle');
+            textLabel.classList.add('node-text-label');
+            textLabel.textContent = label;
+            group.appendChild(textLabel);
+           
+            const textKw = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textKw.id = `text-kw-${key}`;
+            textKw.setAttribute('x', x);
+            textKw.setAttribute('y', y + 15);
+            textKw.setAttribute('text-anchor', 'middle');
+            textKw.classList.add('node-text-kw');
+            textKw.textContent = '-- kW';
+            if (key !== 'hub') group.appendChild(textKw);
+           
+            const textKwh = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textKwh.id = `text-kwh-${key}`;
+            textKwh.setAttribute('x', x);
+            textKwh.setAttribute('y', y + 27);
+            textKwh.setAttribute('text-anchor', 'middle');
+            textKwh.classList.add('node-text-kwh');
+            textKwh.textContent = '-- kWh';
+            if (key !== 'hub' && key !== 'battery' && key !== 'grid') group.appendChild(textKwh);
+           
+            if (key === 'battery') {
+                textLabel.setAttribute('y', y - 18);
+                textKw.setAttribute('y', y - 2);
+                const textSoc = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textSoc.id = 'text-soc-battery';
+                textSoc.setAttribute('x', x);
+                textSoc.setAttribute('y', y + 18);
+                textSoc.setAttribute('text-anchor', 'middle');
+                textSoc.classList.add('node-text-soc');
+                textSoc.textContent = '-- %';
+                group.appendChild(textSoc);
+             }
+            if (key === 'house') {
+                textLabel.setAttribute('y', y - 10);
+                textKw.setAttribute('y', y + 5);
+                textKwh.setAttribute('y', y + 18);
+                const textNetSpeed = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textNetSpeed.id = 'text-net-speed-house';
+                textNetSpeed.setAttribute('x', x - 45);
+                textNetSpeed.setAttribute('y', y + 5);
+                textNetSpeed.setAttribute('text-anchor', 'end');
+                textNetSpeed.classList.add('node-text-kwh');
+                textNetSpeed.textContent = 'Net: -- Mbps';
+                group.appendChild(textNetSpeed);
+             }
+             if (key === 'eddi') {
+                const textTankTemp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textTankTemp.id = 'text-tank-temp-eddi';
+                textTankTemp.setAttribute('x', x + 45);
+                textTankTemp.setAttribute('y', y);
+                textTankTemp.setAttribute('text-anchor', 'start');
+                textTankTemp.classList.add('node-text-kwh');
+                textTankTemp.textContent = 'Tank: --°';
+                group.appendChild(textTankTemp);
+
+                const textEddiKwh = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textEddiKwh.id = 'text-eddi-green-kwh';
+                textEddiKwh.setAttribute('x', x + 45);
+                textEddiKwh.setAttribute('y', y + 12);
+                textEddiKwh.setAttribute('text-anchor', 'start');
+                textEddiKwh.classList.add('node-text-kwh');
+                textEddiKwh.textContent = 'Green kWh: --';
+                group.appendChild(textEddiKwh);
+             }
+            if(key === 'grid') {
+                const textGridVoltage = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textGridVoltage.id = 'text-grid-voltage';
+                textGridVoltage.setAttribute('x', x - 45);
+                textGridVoltage.setAttribute('y', y);
+                textGridVoltage.setAttribute('text-anchor', 'end');
+                textGridVoltage.classList.add('node-text-kwh');
+                textGridVoltage.textContent = '-- V';
+                group.appendChild(textGridVoltage);
+
+                const textGridFreq = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textGridFreq.id = 'text-grid-frequency';
+                textGridFreq.setAttribute('x', x - 45);
+                textGridFreq.setAttribute('y', y + 12);
+                textGridFreq.setAttribute('text-anchor', 'end');
+                textGridFreq.classList.add('node-text-kwh');
+                textGridFreq.textContent = '-- Hz';
+                group.appendChild(textGridFreq);
+
+                const textKwhExp = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                textKwhExp.id = 'text-kwh-grid-exp';
+                textKwhExp.setAttribute('x', x + 45);
+                textKwhExp.setAttribute('y', y + 10);
+                textKwhExp.setAttribute('text-anchor', 'start');
+                textKwhExp.classList.add('node-text-kwh');
+                textKwhExp.textContent = 'Export ↑ -- kWh';
+               
+                textKwh.id = 'text-kwh-grid-imp';
+                textKwh.setAttribute('x', x + 45);
+                textKwh.setAttribute('y', y - 5);
+                textKwh.setAttribute('text-anchor', 'start');
+                textKwh.textContent = 'Import ↓ -- kWh';
+               
+                group.appendChild(textKwh);
+                group.appendChild(textKwhExp);
+             }
+            svg.appendChild(group);
+         });
+
+        const batteryNode = svgConfig.nodes.battery;
+        const textKwhChg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        textKwhChg.id = 'text-kwh-battery-chg';
+        textKwhChg.setAttribute('x', batteryNode.x);
+        textKwhChg.setAttribute('y', batteryNode.y + 55);
+        textKwhChg.setAttribute('text-anchor', 'middle');
+        textKwhChg.classList.add('node-text-kwh');
+        textKwhChg.textContent = '→ -- kWh / ← -- kWh';
+        svg.appendChild(textKwhChg);
+
+        const totalGenGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const totalGenLabel = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        totalGenLabel.setAttribute('x', 50); totalGenLabel.setAttribute('y', 188);
+        totalGenLabel.setAttribute('text-anchor', 'middle'); totalGenLabel.classList.add('total-gen-label'); totalGenLabel.textContent = 'Total Gen';
+        const totalGenValue = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        totalGenValue.id = 'text-kwh-total_pv';
+        totalGenValue.setAttribute('x', 50);
+        totalGenValue.setAttribute('y', 202);
+        totalGenValue.setAttribute('text-anchor', 'middle');
+        totalGenValue.classList.add('total-gen-value');
+        totalGenValue.textContent = '-- kWh';
+        totalGenGroup.appendChild(totalGenLabel);
+        totalGenGroup.appendChild(totalGenValue);
+        svg.appendChild(totalGenGroup);
+     }
+
+    function setFlow(from, to, power) {
+        const absPower = Math.abs(power);
+        const isActive = absPower > 0.08;
+
+        const isForward = power >= 0;
+        const sourceNode = svgConfig.nodes[isForward ? from : to];
+        const targetNode = svgConfig.nodes[isForward ? to : from];
+       
+        const flow = svgConfig.flows[`${from}-${to}`];
+        if (!flow) {
+            console.error(`Flow ${from}-${to} does not exist.`);
+            return;
+         }
+
+        flow.line.style.stroke = isActive ? sourceNode.color : 'var(--border-color)';
+        if (isActive) {
+            const markerId = `arrowhead-${targetNode.label.replace(/\s+/g, '_')}`;
+            flow.line.setAttribute('marker-end', `url(#${markerId})`);
+         } else {
+            flow.line.removeAttribute('marker-end');
+         }
+
+        flow.blips.forEach((blip, i) => {
+            if (isActive) {
+                blip.style.visibility = 'visible';
+                blip.style.fill = sourceNode.color;
+               
+                const maxPowerForSpeed = 5.0;
+                const maxDuration = 4.0;   
+                const minDuration = 0.3;        
+                const speedRange = maxDuration - minDuration;
+                const powerPercentage = Math.min(1.0, absPower / maxPowerForSpeed);
+                const duration = maxDuration - (powerPercentage * speedRange);
+
+                const animationName = isForward ? `move-${from}-${to}` : `move-${to}-${from}`;
+                blip.style.animation = `${animationName} ${duration}s linear ${i * duration / 5}s infinite`;
+             } else {
+                blip.style.visibility = 'hidden';
+                blip.style.animation = 'none';
+             }
+         });
+     }
+
+    function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+        var angleInRadians = (angleInDegrees-90) * Math.PI / 180.0;
+        return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+         };
+     }
+   
+    function describeArc(x, y, radius, startAngle, endAngle){
+        var start = polarToCartesian(x, y, radius, endAngle);
+        var end = polarToCartesian(x, y, radius, startAngle);
+        var largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+        var d = [
+            "M", start.x, start.y,
+            "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+        ].join(" ");
+        return d;       
+     }
+   
+    function updatePowerFlow(data) {
+        document.getElementById('text-kw-solis_pv').textContent = `${(data.solisPvPower || 0).toFixed(2)} kW`;
+        document.getElementById('text-kw-hypontech_pv').textContent = `${(data.hypontechPvPower || 0).toFixed(2)} kW`;
+        document.getElementById('text-kw-grid').textContent = `${Math.abs(data.gridPower || 0).toFixed(2)} kW`;
+        document.getElementById('text-kw-house').textContent = `${(data.loadPower || 0).toFixed(2)} kW`;
+        document.getElementById('text-kw-battery').textContent = `${Math.abs(data.batteryPower || 0).toFixed(2)} kW`;
+        document.getElementById('text-kw-ev_charger').textContent = `${(data.evChargerPower || 0).toFixed(2)} kW`;
+        document.getElementById('text-kw-eddi').textContent = `${(data.eddiPower || 0).toFixed(2)} kW`;
+        document.getElementById('text-soc-battery').textContent = `${data.batterySOC || '--'} %`;
+        document.getElementById('text-kwh-solis_pv').textContent = `${(data.solisPvToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-hypontech_pv').textContent = `${(data.hypontechPvToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-house').textContent = `${(data.loadToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-ev_charger').textContent = `${(data.evChargerToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-eddi').textContent = `${(data.eddiEnergyUsedToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-grid-imp').textContent = `Import ↓ ${(data.gridImportToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-grid-exp').textContent = `Export ↑ ${(data.gridExportToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-battery-chg').textContent = `→ ${(data.chargedToday || 0).toFixed(1)} kWh / ← ${(data.dischargedToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-kwh-total_pv').textContent = `${(data.generatedToday || 0).toFixed(1)} kWh`;
+        document.getElementById('text-net-speed-house').textContent = `Net: ${(data.downloadSpeed || 0).toFixed(1)} Mbps`;
+        document.getElementById('text-tank-temp-eddi').textContent = data.tankTemp !== null ? `Tank: ${data.tankTemp.toFixed(1)}°` : 'Tank: --°';
+        document.getElementById('text-eddi-green-kwh').textContent = `Green kWh: ${(data.eddiGreenKwhToday || 0).toFixed(1)}`;
+        document.getElementById('text-grid-voltage').textContent = `${(data.gridVoltage || 0).toFixed(1)} V`;
+        document.getElementById('text-grid-frequency').textContent = `${(data.gridFrequency || 0).toFixed(1)} Hz`;
+       
+        setFlow('solis_pv', 'hub', data.solisPvPower);
+        setFlow('hypontech_pv', 'hub', data.hypontechPvPower);
+        setFlow('grid', 'hub', -data.gridPower);
+        // --- BATTERY FLOW FIX ---
+        // Invert the battery power value.
+        // A positive data.batteryPower (charging) becomes negative, so flow is TO battery.
+        // A negative data.batteryPower (discharging) becomes positive, so flow is FROM battery.
+        setFlow('battery', 'hub', -data.batteryPower);
+        setFlow('hub', 'house', data.loadPower);
+        setFlow('hub', 'ev_charger', data.evChargerPower);
+        setFlow('house', 'eddi', data.eddiPower);
+
+        const solisPct = Math.min(1, (data.solisPvPower || 0) / 6.0);
+        const hypontechPct = Math.min(1, (data.hypontechPvPower || 0) / 5.0);
+        const solisAngle = solisPct * 359.99;
+        const hypontechAngle = hypontechPct * 359.99;
+       
+        const solisRing = document.getElementById('power-ring-solis_pv');
+        const hypontechRing = document.getElementById('power-ring-hypontech_pv');
+       
+        if (solisRing) solisRing.setAttribute("d", describeArc(50, 125, 44, 0, solisAngle));
+        if (hypontechRing) hypontechRing.setAttribute("d", describeArc(50, 250, 44, 0, hypontechAngle));
+     }
+   
+    function getWeatherIcon(condition) {
+        const conditionLower = condition ? condition.toLowerCase() : '';
+        switch (true) {
+            case conditionLower.includes('sunny'):
+            case conditionLower.includes('clear'):
+                return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+            case conditionLower.includes('cloudy'):
+            case conditionLower.includes('overcast'):
+                return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>`;
+            case conditionLower.includes('rain'):
+            case conditionLower.includes('shower'):
+                return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 12a11.2 11.2 0 0 0-22 0c0 5 4 9 9 9h4c4 0 9-3 9-9z"></path><path d="M9.5 14.5a2.5 2.5 0 0 1 5 0"></path><path d="M8 22v-2"></path><path d="M16 22v-2"></path></svg>`;
+            case conditionLower.includes('snow'):
+                return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 17.58A5 5 0 0 0 15.07 15H9.58A5 5 0 0 0 5 17.58"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="8" y1="20" x2="8" y2="20"></line><line x1="12" y1="18" x2="12" y2="18"></line><line x1="12" y1="22" x2="12" y2="22"></line><line x1="16" y1="16" x2="16" y2="16"></line><line x1="16" y1="20" x2="16" y2="20"></line></svg>`;
+            default:
+                return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>`;
+         }
+     }
+
+    function safeParseFloat(value) {
+        const num = parseFloat(value);
+        return isNaN(num) ? 0 : num;
+     }
+
+    function processAndCombineData(solis, hypontech, myenergi) {
+        const s = solis?.data || {};
+        const h_data = hypontech?.data || {};
+        const myenergi_data = myenergi || [];
+        const hypontechRealTime = h_data.realTimeData || h_data;
+        const hypontechAggregate = h_data.aggregateData || h_data;
+       
+        const evPowerEntity = myenergi_data.find(e => e.entity_id.includes('zappi') && e.attributes?.friendly_name?.toLowerCase().includes('power charging'));
+        const evEnergyEntity = myenergi_data.find(e => e.entity_id.includes('zappi') && e.attributes?.friendly_name?.toLowerCase().includes('energy used today'));
+        const eddiPowerEntity = myenergi_data.find(e => e.entity_id.includes('eddi') && e.attributes?.friendly_name?.toLowerCase().includes('power ct internal load'));
+        const eddiEnergyUsedTodayEntity = myenergi_data.find(e => e.entity_id.includes('eddi') && e.attributes?.friendly_name?.toLowerCase().includes('energy used today'));
+        const eddiGreenEnergyTodayEntity = myenergi_data.find(e => e.entity_id.includes('eddi') && e.attributes?.friendly_name?.toLowerCase().includes('green energy today'));
+        const downloadSpeedEntity = myenergi_data.find(e => e.entity_id.includes('speedtest_download'));
+        const tankTempEntity = myenergi_data.find(e => e.entity_id.includes('eddi') && e.attributes?.friendly_name?.toLowerCase().includes('temp tank 1'));
+        const voltageEntity = myenergi_data.find(e => e.attributes?.friendly_name?.toLowerCase().includes('voltage grid'));
+        const frequencyEntity = myenergi_data.find(e => e.attributes?.friendly_name?.toLowerCase().includes('frequency grid'));
+       
+        const myenergiExportEntity = myenergi_data.find(e => e.attributes?.friendly_name?.toLowerCase().includes('grid export today'));
+        const myenergiExportToday = myenergiExportEntity ? safeParseFloat(myenergiExportEntity.state) : 0;
+        const solisExportToday = s.gridSellTodayEnergy ?? s.gridSellDayEnergy ?? 0;
+
+        const solisPV = s.pac ?? s.power ?? 0;
+        const hypontechPV = (hypontechRealTime.power_pv || 0) / 1000;
+        const solisLoad = s.familyLoadPower || 0;
+        const hypontechLoad = (hypontechRealTime.power_load || 0) / 1000;
+        const evChargerPower = safeParseFloat(evPowerEntity?.state) / 1000;
+        const eddiPower = safeParseFloat(eddiPowerEntity?.state) / 1000;
+        const solisBatteryPower = s.batteryPower || 0;
+        const isCharging = s.batteryDirection === 4;
+       
+        const solisTimestamp = s.dataTimestamp ? Number(s.dataTimestamp) : 0;
+        const hypontechTimestamp = hypontech?.retrievedAt ? new Date(hypontech.retrievedAt).getTime() : 0;
+       
+        const batterySOC = s.soc ?? s.batteryPercent;
+        const batteryCapacityKwh = batterySOC ? (batterySOC / 100) * 15.6 : null;
+
+        return {
+            solisPvPower: solisPV,
+            hypontechPvPower: hypontechPV,
+            loadPower: solisLoad + hypontechLoad,
+            gridPower: s.psum || 0,
+            batteryPower: isCharging ? solisBatteryPower : -solisBatteryPower,
+            evChargerPower: evChargerPower,
+            evChargerToday: safeParseFloat(evEnergyEntity?.state),
+            eddiPower: eddiPower,
+            eddiEnergyUsedToday: safeParseFloat(eddiEnergyUsedTodayEntity?.state),
+            eddiGreenKwhToday: safeParseFloat(eddiGreenEnergyTodayEntity?.state),
+            downloadSpeed: downloadSpeedEntity ? safeParseFloat(downloadSpeedEntity.state) : null,
+            tankTemp: tankTempEntity ? safeParseFloat(tankTempEntity.state) : null,
+            gridVoltage: voltageEntity ? safeParseFloat(voltageEntity.state) : (s.acVoltage || 0),
+            gridFrequency: frequencyEntity ? safeParseFloat(frequencyEntity.state) : (s.acFrequency || 0),
+            generatedToday: (s.eToday ?? s.dayEnergy ?? 0) + (hypontechAggregate.kwhac || 0),
+            consumedToday: (s.homeLoadEnergy ?? s.homeLoadTodayEnergy ?? 0) + (hypontechAggregate.load || 0),
+            importToday: (s.gridPurchasedTodayEnergy ?? s.gridPurchasedDayEnergy ?? 0) + (hypontechAggregate.load_from_grid || 0),
+            exportToday: Math.max(solisExportToday, myenergiExportToday),
+            solisPvToday: s.eToday ?? s.dayEnergy ?? 0,
+            hypontechPvToday: hypontechAggregate.kwhac || 0,
+            loadToday: (s.homeLoadEnergy ?? s.homeLoadTodayEnergy ?? 0) + (hypontechAggregate.load || 0),
+            gridImportToday: (s.gridPurchasedTodayEnergy ?? s.gridPurchasedDayEnergy ?? 0) + (hypontechAggregate.load_from_grid || 0),
+            gridExportToday: Math.max(solisExportToday, myenergiExportToday),
+            chargedToday: s.batteryChargeTodayEnergy ?? s.batteryChargeEnergy ?? 0,
+            dischargedToday: s.batteryDischargeTodayEnergy ?? s.batteryDischargeEnergy ?? 0,
+            batterySOC: batterySOC,
+            batteryCapacityKwh: batteryCapacityKwh,
+            systemStatus: (s.state === 1 || s.inverterOnlineCount > 0) ? 'Online' : 'Offline',
+            lastUpdateTime: solisTimestamp ? new Date(solisTimestamp).toLocaleString('en-IE', { timeZone: 'Europe/Dublin' }) : '--',
+            dataTimestamp: new Date(Math.max(solisTimestamp, hypontechTimestamp)).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            weather: {
+                condition: s.condTxtD,
+                tempMax: s.tmpMax,
+                tempMin: s.tmpMin,
+                location: s.cityStr,
+                sunrise: s.sr,
+                sunset: s.ss,
+                humidity: s.hum
+             }
+         };
+     }
+
+    function updateUI(data) {
+        UIElements['sum-gen'].textContent = data.generatedToday.toFixed(2);
+        UIElements['sum-cons'].textContent = data.consumedToday.toFixed(2);
+        UIElements['sum-imp'].textContent = data.importToday.toFixed(2);
+        UIElements['sum-exp'].textContent = data.exportToday.toFixed(2);
+        UIElements['sum-chg'].textContent = data.chargedToday.toFixed(2);
+        UIElements['sum-dis'].textContent = data.dischargedToday.toFixed(2);
+        UIElements['stat-soc'].textContent = data.batterySOC ?? '--';
+        UIElements['stat-cap'].textContent = data.batteryCapacityKwh ? `${data.batteryCapacityKwh.toFixed(1)} / 15.6` : '-- / 15.6';
+        UIElements.systemStatus.textContent = data.systemStatus;
+        UIElements.lastUpdateTime.textContent = data.lastUpdateTime;
+        UIElements.dataTimestamp.textContent = `As of ${data.dataTimestamp}`;
+        updatePowerFlow(data);
+       
+        if (data.weather) {
+            UIElements.weatherIcon.innerHTML = getWeatherIcon(data.weather.condition);
+            UIElements.weatherTemp.textContent = `${data.weather.tempMax || '--'}°/${data.weather.tempMin || '--'}°`;
+            UIElements.weatherLocation.textContent = data.weather.location || '--';
+            UIElements.weatherSunrise.textContent = `${data.weather.sunrise || '--:--'} - ${data.weather.sunset || '--:--'}`;
+            UIElements.weatherHumidity.textContent = `${data.weather.humidity || '--'}%`;
+
+            const now = new Date();
+            const sunrise = data.weather.sunrise ? parseInt(data.weather.sunrise.replace(':', '')) : 600;
+            const sunset = data.weather.sunset ? parseInt(data.weather.sunset.replace(':', '')) : 1800;
+            const currentTime = now.getHours() * 100 + now.getMinutes();
+           
+            if (UIElements.headerSection) {
+                UIElements.headerSection.classList.toggle('night', !(currentTime > sunrise && currentTime < sunset));
+             }
+         }
+     }
+
+    function formatValueWithUnit(key, value) {
+        const keyLower = key.toLowerCase();
+        if (typeof value === 'number' && !Number.isInteger(value)) {
+            value = value.toFixed(2);
+         }
+
+        if (keyLower.includes('power') || keyLower.includes('pac') || keyLower.includes('psum')) return `${value} kW`;
+        if (keyLower.includes('energy') || keyLower.includes('etoday') || keyLower.includes('kwhac')) return `${value} kWh`;
+        if (keyLower.includes('volt')) return `${value} V`;
+        if (keyLower.includes('freq')) return `${value} Hz`;
+        if (keyLower.includes('soc') || keyLower.includes('percent') || keyLower.includes('hum')) return `${value} %`;
+        if (keyLower.includes('temp')) return `${value} °C`;
+        if (keyLower.includes('speed')) return `${value} Mbps`;
+        return value;
+     }
+   
+    function renderDetailedDataView(solisJson, hypontechJson, myenergiJson) {
+        const createTableFromFlatObject = (data, title) => {
+            let rowsHtml = '';
+            if (data && typeof data === 'object') {
+                for (const [key, value] of Object.entries(data)) {
+                    if (value !== null && value !== '' && value !== undefined && typeof value !== 'object' && !Array.isArray(value)) {
+                        const label = key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, str => str.toUpperCase());
+                        rowsHtml += `<div class="data-label">${label}</div><div class="data-value">${formatValueWithUnit(key, value)}</div>`;
+                     }
+                 }
+             }
+            if (!rowsHtml) return '';
+            return `<div><div class="data-sub-section-title">${title}</div><div class="data-table-single"><div class="data-table-grid">${rowsHtml}</div></div></div>`;
+         };
+
+        // --- Solis Data Rendering ---
+        const solisContainer = UIElements.solisDataContainer;
+        const s_data = solisJson?.data;
+        let solisHtml = '';
+
+        if (s_data && typeof s_data === 'object' && Object.keys(s_data).length > 0) {
+            const usedKeys = new Set();
+           
+            const formatKeyToLabel = (key) => key.replace(/([A-Z])/g, ' $1').replace(/_/g, ' ').replace(/^./, str => str.toUpperCase());
+
+            // Process grouped data from the G configuration object
+            for (const groupName in G) {
+                const itemsHtml = G[groupName].map(i => {
+                    if (!s_data.hasOwnProperty(i.k)) return '';
+                   
+                    const rawVal = s_data[i.k];
+                    if (!ALWAYS_SHOW.has(i.k) && (rawVal == null || rawVal === 0 || rawVal === '')) {
+                        return '';
+                    }
+
+                    usedKeys.add(i.k);
+                    if (i.u) usedKeys.add(i.u);
+                    if (i.k === 'cityStr') usedKeys.add('countryStr');
+                    if (i.k === 'condTxtD') { usedKeys.add('tmpMin'); usedKeys.add('tmpMax'); usedKeys.add('tmpUnit'); }
+                    if (i.k === 'sr') usedKeys.add('ss');
+
+                    const val = i.f ? i.f(s_data[i.k], s_data) : s_data[i.k];
+                    const unit = i.u ? s_data[i.u] : (i.un || '');
+                    const finalValue = `${val} ${unit}`.trim();
+
+                    return `<div class="data-label">${i.l}</div><div class="data-value">${finalValue}</div>`;
+                }).join('');
+               
+                if (itemsHtml.length > 0) {
+                    solisHtml += `<div><div class="data-sub-section-title">${groupName}</div><div class="data-table-single"><div class="data-table-grid">${itemsHtml}</div></div></div>`;
+                }
+            }
+
+            // Process "Other Data" (keys not in the G configuration)
+            const otherKeys = Object.keys(s_data).filter(k => !usedKeys.has(k) && k !== 'stationName' && k !== 'dataTimestamp').sort();
+            if (otherKeys.length > 0) {
+                const otherItemsHtml = otherKeys.map(k => {
+                    const rawVal = s_data[k];
+                    if (rawVal == null || rawVal === '' || (typeof rawVal === 'object' && rawVal !== null)) {
+                        return '';
+                    }
+                     if (!ALWAYS_SHOW.has(k) && rawVal === 0) {
+                        return '';
+                    }
+                    return `<div class="data-label">${formatKeyToLabel(k)}</div><div class="data-value">${s_data[k]}</div>`;
+                }).join('');
+
+                if (otherItemsHtml.replace(/<div[^>]*><\/div>/g, '').length > 0) {
+                   solisHtml += `<div><div class="data-sub-section-title">More Details</div><div class="data-table-single"><div class="data-table-grid">${otherItemsHtml}</div></div></div>`;
+                }
+            }
+        }
+       
+        solisContainer.innerHTML = solisHtml || '<p style="padding: 10px;">No data received from Solis.</p>';
+
+        // --- Hypontech Data Rendering ---
+        const hypontechContainer = UIElements.hypontechDataContainer;
+        const h_data = hypontechJson?.data || {};
+        let hypontechHtml = '';
+        if (h_data.realTimeData) hypontechHtml += createTableFromFlatObject(h_data.realTimeData, "Hypontech Real-Time");
+        if (h_data.aggregateData) hypontechHtml += createTableFromFlatObject(h_data.aggregateData, "Hypontech Aggregate");
+        hypontechContainer.innerHTML = hypontechHtml || '<p style="padding: 10px;">No data received from Hypontech.</p>';
+
+        // --- MyEnergi Data Rendering ---
+        const createMyEnergiTable = (data, title) => {
+            if (!data || data.length === 0) return '';
+            let rowsHtml = '';
+            data.forEach(entity => {
+                if (entity.state !== 'unavailable' && entity.state !== 'unknown') {
+                    const label = entity.attributes.friendly_name
+                        .replace(/myenergi\s*(zappi|eddi)[\s-]*\d+\s*/i, '')
+                        .trim();
+                    const value = `${entity.state} ${entity.attributes.unit_of_measurement || ''}`.trim();
+                    rowsHtml += `<div class="data-label">${label}</div><div class="data-value">${value}</div>`;
+                 }
+             });
+             if (!rowsHtml) return '';
+            return `<div><div class="data-sub-section-title">${title}</div><div class="data-table-single"><div class="data-table-grid">${rowsHtml}</div></div></div>`;
+         };
+
+        const eddiData = myenergiJson ? myenergiJson.filter(e => e.entity_id.includes('eddi')) : [];
+        const zappiData = myenergiJson ? myenergiJson.filter(e => e.entity_id.includes('zappi')) : [];
+       
+        UIElements.eddiDataContainer.innerHTML = createMyEnergiTable(eddiData, "Eddi Details") || '<p style="padding: 10px;">No data available for Eddi.</p>';
+        UIElements.zappiDataContainer.innerHTML = createMyEnergiTable(zappiData, "Zappi Details") || '<p style="padding: 10px;">No data available for Zappi.</p>';
+     }
+
+
+    const apiFailures = { solis: 0, hypontech: 0, myenergi: 0 };
+
+    function parseMyEnergiHTML(htmlString) {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+            const rows = doc.querySelectorAll('tbody tr');
+            if (rows.length === 0) {
+                const errorHeader = doc.querySelector('h1');
+                if (errorHeader && errorHeader.textContent.toLowerCase().includes('error')) {
+                    throw new Error(errorHeader.textContent);
+                 }
+                return [];
+             }
+
+            const data = [];
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length === 3) {
+                    const entity_id = cells[0].textContent.trim();
+                    const state = cells[1].textContent.trim();
+                    const attributesString = cells[2].querySelector('pre').textContent;
+                    const attributes = JSON.parse(attributesString);
+                    data.push({ entity_id, state, attributes });
+                 }
+             });
+            return data;
+         } catch (e) {
+            console.error("Failed to parse MyEnergi HTML:", e);
+            throw new Error(`Failed to parse MyEnergi HTML response. ${e.message}`);
+         }
+     }
+
+    async function fetchAllData() {
+        const statuses = {
+            solis: UIElements.solisStatus,
+            hypontech: UIElements.hypontechStatus,
+            eddi: UIElements.eddiStatus,
+            zappi: UIElements.zappiStatus
+         };
+        Object.values(statuses).forEach(s => s.textContent = '... collecting');
+       
+        let solisData = null, hypontechData = null, myenergiData = null;
+        const errorMessages = [];
+       
+        const [solisResult, hypontechResult, myenergiResult] = await Promise.allSettled([
+            fetch(SOLIS_API_URL).then(res => res.ok ? res.json() : Promise.reject(new Error(`Network error (${res.status})`))),
+            fetch(HYPONTECH_API_URL).then(res => res.ok ? res.json() : Promise.reject(new Error(`Network error (${res.status})`))),
+            fetch(MYENERGI_API_URL).then(res => res.ok ? res.text() : Promise.reject(new Error(`Network error (${res.status})`)))
+        ]);
+       
+        if (solisResult.status === 'rejected' || !solisResult.value?.success || !solisResult.value.data || Object.keys(solisResult.value.data).length === 0) {
+            apiFailures.solis++;
+            const msg = solisResult.status === 'rejected' ? solisResult.reason.message : (solisResult.value?.msg || 'Worker error or no data');
+            errorMessages.push(`Solis: ${msg}`);
+            statuses.solis.textContent = 'Failed';
+         } else {
+            apiFailures.solis = 0;
+            solisData = solisResult.value;
+            statuses.solis.textContent = 'Updated';
+         }
+       
+        if (hypontechResult.status === 'rejected' || !hypontechResult.value?.success) {
+            apiFailures.hypontech++;
+            const msg = hypontechResult.status === 'rejected' ? hypontechResult.reason.message : (hypontechResult.value?.error?.message || 'Worker error');
+            errorMessages.push(`Hypontech: ${msg}`);
+            statuses.hypontech.textContent = 'Failed';
+         } else {
+            apiFailures.hypontech = 0;
+            hypontechData = hypontechResult.value;
+            statuses.hypontech.textContent = 'Updated';
+         }
+
+        if (myenergiResult.status === 'rejected') {
+            apiFailures.myenergi++;
+            errorMessages.push(`MyEnergi API: ${myenergiResult.reason.message}`);
+            statuses.eddi.textContent = 'Failed';
+            statuses.zappi.textContent = 'Failed';
+         } else {
+             try {
+                myenergiData = parseMyEnergiHTML(myenergiResult.value);
+                apiFailures.myenergi = 0;
+                statuses.eddi.textContent = 'Updated';
+                statuses.zappi.textContent = 'Updated';
+             } catch (parseError) {
+                apiFailures.myenergi++;
+                errorMessages.push(`MyEnergi Data: ${parseError.message}`);
+                myenergiData = null;
+                statuses.eddi.textContent = 'Failed';
+                statuses.zappi.textContent = 'Failed';
+             }
+         }
+       
+        renderDetailedDataView(solisData, hypontechData, myenergiData);
+       
+        if (Object.values(apiFailures).some(f => f >= 5)) {
+            UIElements.apiError.textContent = errorMessages.join(' | ');
+            UIElements.apiError.style.display = 'block';
+            UIElements.connectionStatus.textContent = 'Failed';
+         } else {
+            UIElements.apiError.style.display = 'none';
+            UIElements.connectionStatus.textContent = 'Success';
+         }
+       
+        const processedData = processAndCombineData(solisData, hypontechData, myenergiData || []);
+        updateUI(processedData);
+       
+        UIElements.connectionStatus.textContent = 'Idle';
+     }
+
+    const toggleButtons = document.querySelectorAll('.data-toggle-btn');
+    const dataContainers = document.querySelectorAll('.data-container');
+
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetId = button.dataset.target;
+            const targetContainer = document.getElementById(targetId);
+            const isAlreadyVisible = targetContainer.classList.contains('visible');
+
+            toggleButtons.forEach(btn => btn.classList.remove('active'));
+            dataContainers.forEach(container => container.classList.remove('visible'));
+
+            if (!isAlreadyVisible) {
+                targetContainer.classList.add('visible');
+                button.classList.add('active');
+             }
+         });
+     });
+   
+    initPowerFlowSVG();
+    const styleSheet = document.createElement("style");
+    document.head.appendChild(styleSheet);
+    Object.keys(svgConfig.flows).forEach(key => {
+        const [from, to] = key.split('-');
+        const fromNode = svgConfig.nodes[from];
+        const toNode = svgConfig.nodes[to];
+        styleSheet.sheet.insertRule(`@keyframes move-${from}-${to} { from { cx: ${fromNode.x}; cy: ${fromNode.y}; } to { cx: ${toNode.x}; cy: ${toNode.y}; } }`);
+        styleSheet.sheet.insertRule(`@keyframes move-${to}-${from} { from { cx: ${toNode.x}; cy: ${toNode.y}; } to { cx: ${fromNode.x}; cy: ${fromNode.y}; } }`);
+     });
+
+    fetchAllData();
+    setInterval(fetchAllData, 3000);
+   
+});
+</script>
+</body>
+</html>
+
+
