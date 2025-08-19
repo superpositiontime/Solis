@@ -392,7 +392,33 @@
          }
        
         .version-footer { text-align: center; font-size: 0.7em; color: var(--text-light-color); margin-top: 20px; }
-    </style>
+    
+        /* Mobile optimizations */
+         @media (max-width: 600px) {
+            body { padding: 10px; }
+            .dashboard-card { border-radius: 16px; max-width: 100%; }
+            #header-section { padding: 12px 16px; }
+            .header-top-row { flex-direction: column; gap: 10px; align-items: stretch; }
+            .top-right-controls { justify-content: space-between; }
+            #themeToggle { padding: 8px; }
+            .card-title { font-size: 1.3em; }
+            .main-content { padding: 16px; }
+            #power-flow-container { aspect-ratio: 400 / 500; }
+            .energy-summary-grid, .system-status-grid { grid-template-columns: 1fr 1fr; gap: 12px 8px; }
+            .data-toggle-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+            .data-toggle-btn { padding: 12px; font-size: 1em; }
+            .data-table { grid-template-columns: minmax(120px, 1.5fr) 1fr 1fr; }
+            .data-table-single .data-table-grid { grid-template-columns: minmax(120px, 1.5fr) 1.5fr; }
+            #weatherIcon { width: 40px; height: 40px; }
+            #weatherWidget { gap: 10px; }
+        }
+
+         @media (max-width: 380px) {
+            .card-title { font-size: 1.2em; }
+            .summary-item .value { font-size: 1em; }
+            #power-flow-container { aspect-ratio: 400 / 550; }
+        }
+</style>
 </head>
 <body>
     <div class="dashboard-card">
